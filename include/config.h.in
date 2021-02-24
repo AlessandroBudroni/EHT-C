@@ -1,0 +1,160 @@
+/*  This file is part of EHT-C.
+ *
+ *   name file: config.h
+ *   Author: Alessandro Budroni
+ *
+ *  EHT-C is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  EHT-C is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Nome-Programma.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/* MACROS FOR DEBUGGING */
+// #define PRINT_STAMP
+// #define SEED_ZERO
+
+/* Types */
+#define u8 uint8_t
+#define u16 uint16_t
+#define u32 uint32_t
+#define u64 uint64_t
+
+/* to represent finite field elements, it must be larger than Q */
+#define FP uint16_t
+#define PRIu16 "hu"
+
+#define ${PROTOCOL_VERSION}
+
+/* parameters of the protocol */
+#if defined(EHT_light_A)
+
+#define Q 1021       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define N 256
+#define K 16
+#define LAMBDA2 32
+#define SIGMA 8.7806
+#define M K*N
+#define R (K*N)/LAMBDA2
+#define PRECISION 4*SIGMA
+#define CDF_TABLE_LEN 37
+#define KDIM 2
+#define SIZE_SEARCH 5 // size of the quick pre-computation in decryption
+
+#elif defined(EHT_light_B)
+
+#define Q 2039       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define N 256
+#define K 25
+#define LAMBDA2 32
+#define SIGMA 14.4769
+#define M K*N
+#define R (K*N)/LAMBDA2
+#define PRECISION 4*SIGMA
+#define CDF_TABLE_LEN 59
+#define KDIM 2
+#define SIZE_SEARCH // size of the quick pre-computation in decryption
+
+#elif defined(EHT_medium_A)
+
+#define Q 2039       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define N 384
+#define K 14
+#define LAMBDA2 32
+#define SIGMA 13.4574
+#define M K*N
+#define R (K*N)/LAMBDA2
+#define PRECISION 4*SIGMA
+#define CDF_TABLE_LEN 55
+#define KDIM 2
+#define SIZE_SEARCH // size of the quick pre-computation in decryption
+
+#elif defined(EHT_medium_B)
+
+#define Q 2039       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define N 384
+#define K 24
+#define LAMBDA2 32
+#define SIGMA 13.4574
+#define M K*N
+#define R (K*N)/LAMBDA2
+#define PRECISION 4*SIGMA
+#define CDF_TABLE_LEN 55
+#define KDIM 2
+#define SIZE_SEARCH // size of the quick pre-computation in decryption
+
+#elif defined(EHT_high_A)
+
+#define Q 2039       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define N 448
+#define K 17
+#define LAMBDA2 32
+#define SIGMA 17.5354
+#define M K*N
+#define R (K*N)/LAMBDA2
+#define PRECISION 4*SIGMA
+#define CDF_TABLE_LEN 72
+#define KDIM 2
+#define SIZE_SEARCH // size of the quick pre-computation in decryption
+
+#elif defined(EHT_high_B)
+
+#define Q 4091       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define N 448
+#define K 24
+#define LAMBDA2 32
+#define SIGMA 27.0006
+#define M K*N
+#define R (K*N)/LAMBDA2
+#define PRECISION 4*SIGMA
+#define CDF_TABLE_LEN 110
+#define KDIM 2
+#define SIZE_SEARCH // size of the quick pre-computation in decryption
+
+#else
+
+#define Q 19       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define N 32
+#define K 8
+#define LAMBDA2 4
+#define SIGMA 4
+#define M K*N
+#define R (K*N)/LAMBDA2
+#define PRECISION 4*SIGMA
+#define CDF_TABLE_LEN 18
+#define KDIM 2
+#define SIZE_SEARCH // size of the quick pre-computation in decryption
+
+#endif
+
+/* test that the parameters are fine */
+#if ((LAMBDA2 != 0) && (LAMBDA2 & (LAMBDA2 - 1)))
+#error "LAMBDA2 must be a power of 2"
+#endif
+#if ((N*K)%LAMBDA2)
+#error "N*K must be a multiple of LAMBDA2"
+#endif
+#if (N%8 != 0)
+#error "N must be a multiple of 8"
+#endif
+
+
+/* config variables */
+#define MAX_EXTRA 100 // max accepted plaintext before detection
+
+#endif
