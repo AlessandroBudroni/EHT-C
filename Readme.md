@@ -6,7 +6,7 @@
 
 This repository contains a working proof-of-concept of EHT written in pure C with no external dependencies. 
 
-####How to build
+### How to build
 The code has been tested only on Intel Core processors running GCC as compiler.
 
 ```
@@ -25,14 +25,14 @@ To run the benchmark test for EHT-high-A, run the following
 ./test/EHT_high_A_bench_cycles
 
 ```
-#####We do not claim this code to be secure against side channel attacks and therefore it should not be used in production.
+**We do not claim this code to be secure against side channel attacks and therefore it should not be used in production.**
 
-####Licence
+### Licence
 The code is released under the [GNU General Public License version 3](https://opensource.org/licenses/GPL-3.0).
 
 The function `sample_error(...)` in `src/encrypt.c` was taken and modified from a function in https://github.com/Microsoft/PQCrypto-LWEKE that is relased under the [MIT Licence](https://opensource.org/licenses/MIT) .
 
 
-####Authors:
+### Authors:
 
 - Alessandro Budroni
