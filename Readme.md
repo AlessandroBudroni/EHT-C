@@ -2,11 +2,12 @@
 
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) ![GitHub issues](https://img.shields.io/github/issues/AlessandroBudroni/EHT-C) ![GitHub pull requests](https://img.shields.io/github/issues-pr/AlessandroBudroni/EHT-C) ![GitHub repo size](https://img.shields.io/github/repo-size/AlessandroBudroni/EHT-C)
 
-**Errors Hidden Trapdoor** is a public-key cryptosystem introduced with the manuscript [link](..) based on the well known LWE problem.
+**Errors Hidden Trapdoor** is a public-key cryptosystem introduced with the manuscript [will be soon available](..) based on the well known LWE problem.
 
 This repository contains a working proof-of-concept of EHT written in pure C with no external dependencies. 
 
 ####How to build
+The code has been tested only on Intel Core processors running GCC as compiler.
 
 ```
 mkdir target
