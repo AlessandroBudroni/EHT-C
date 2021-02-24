@@ -26,6 +26,10 @@ To run the benchmark test for EHT-high-A, run the following
 ./test/EHT_high_A_bench_cycles
 
 ```
+It may be required to increase the stack usage with
+```ulimit -s 131070```
+to run EHT-medium-* and EHT-high-*.
+
 **We do not claim this code to be secure against side channel attacks and therefore it should not be used in production.**
 
 ### Licence
@@ -33,6 +37,8 @@ The code is released under the [GNU General Public License version 3](https://op
 
 The function `sample_error(...)` in `src/encrypt.c` was taken and modified from a function in https://github.com/Microsoft/PQCrypto-LWEKE that is relased under the [MIT Licence](https://opensource.org/licenses/MIT) .
 
+### TODO/Work in progress
+- add stack/heap memory usage option (now it's only on stack)
 
 ### Authors:
 
