@@ -1,6 +1,7 @@
 # EHT- C
+[![Build Status](https://travis-ci.com/AlessandroBudroni/EHT-C.svg?branch=main)](https://travis-ci.com/AlessandroBudroni/EHT-C)  [![Coverage Status](https://coveralls.io/repos/github/AlessandroBudroni/EHT-C/badge.svg?branch=main)](https://coveralls.io/github/AlessandroBudroni/EHT-C?branch=main) [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) 
 
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) ![GitHub issues](https://img.shields.io/github/issues/AlessandroBudroni/EHT-C) ![GitHub pull requests](https://img.shields.io/github/issues-pr/AlessandroBudroni/EHT-C) ![GitHub repo size](https://img.shields.io/github/repo-size/AlessandroBudroni/EHT-C)
+![GitHub issues](https://img.shields.io/github/issues/AlessandroBudroni/EHT-C) ![GitHub pull requests](https://img.shields.io/github/issues-pr/AlessandroBudroni/EHT-C) ![GitHub repo size](https://img.shields.io/github/repo-size/AlessandroBudroni/EHT-C)
 
 **Errors Hidden Trapdoor** is a public-key cryptosystem introduced with the manuscript [will be soon available](..) based on the well known LWE problem.
 
