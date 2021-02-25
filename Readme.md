@@ -20,10 +20,10 @@ Run correctness tests
 ```
 make test
 ```
-To run the benchmark test for EHT-high-A, run the following
+To run the benchmark test for EHT-light-A, run the following
 
 ```
-./test/EHT_high_A_bench_cycles
+./test/EHT_light_A_bench_cycles
 
 ```
 By default the memory is allocated both in heap and stack. One can choose the option of using only stack memory and achieve the best performances with the following
