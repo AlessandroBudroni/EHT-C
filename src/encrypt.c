@@ -95,8 +95,8 @@ void sample_error(FP *s, const size_t n)
     }
 }
 
-/* Faster encryption y = Ax+e. Generate error on the fly using method adapted from: http://c-faq.com/lib/gaussian.html. */
-void mul_times_secret_plus_error(FP y[M], FP A[][N], FP x[N], FP e[M])
+/* Faster encryption y = Ax+e. A is given in transposed form. */
+void mul_times_secret_plus_error(FP y[M], FP A[][M], FP x[N], FP e[M])
 {
 
     FP tmp_entry[4];
@@ -109,10 +109,10 @@ void mul_times_secret_plus_error(FP y[M], FP A[][N], FP x[N], FP e[M])
         tmp_entry[3] = 0;
         for (u16 k = 0; k < N; k+=8)
         {
-            tmp_entry[0] = (tmp_entry[0] + A[row  ][k]*x[k  ] + A[row  ][k+1]*x[k+1] + A[row  ][k+2]*x[k+2] + A[row  ][k+3]*x[k+3] + A[row  ][k+4]*x[k+4] + A[row  ][k+5]*x[k+5] + A[row  ][k+6]*x[k+6] + A[row  ][k+7]*x[k+7]) % Q;
-            tmp_entry[1] = (tmp_entry[1] + A[row+1][k]*x[k  ] + A[row+1][k+1]*x[k+1] + A[row+1][k+2]*x[k+2] + A[row+1][k+3]*x[k+3] + A[row+1][k+4]*x[k+4] + A[row+1][k+5]*x[k+5] + A[row+1][k+6]*x[k+6] + A[row+1][k+7]*x[k+7]) % Q;
-            tmp_entry[2] = (tmp_entry[2] + A[row+2][k]*x[k  ] + A[row+2][k+1]*x[k+1] + A[row+2][k+2]*x[k+2] + A[row+2][k+3]*x[k+3] + A[row+2][k+4]*x[k+4] + A[row+2][k+5]*x[k+5] + A[row+2][k+6]*x[k+6] + A[row+2][k+7]*x[k+7]) % Q;
-            tmp_entry[3] = (tmp_entry[3] + A[row+3][k]*x[k  ] + A[row+3][k+1]*x[k+1] + A[row+3][k+2]*x[k+2] + A[row+3][k+3]*x[k+3] + A[row+3][k+4]*x[k+4] + A[row+3][k+5]*x[k+5] + A[row+3][k+6]*x[k+6] + A[row+3][k+7]*x[k+7]) % Q;
+            tmp_entry[0] = (tmp_entry[0] + A[k][row  ]*x[k  ] + A[k+1][row  ]*x[k+1] + A[k+2][row  ]*x[k+2] + A[k+3][row  ]*x[k+3] + A[k+4][row  ]*x[k+4] + A[k+5][row  ]*x[k+5] + A[k+6][row  ]*x[k+6] + A[k+7][row  ]*x[k+7]) % Q;
+            tmp_entry[1] = (tmp_entry[1] + A[k][row+1]*x[k  ] + A[k+1][row+1]*x[k+1] + A[k+2][row+1]*x[k+2] + A[k+3][row+1]*x[k+3] + A[k+4][row+1]*x[k+4] + A[k+5][row+1]*x[k+5] + A[k+6][row+1]*x[k+6] + A[k+7][row+1]*x[k+7]) % Q;
+            tmp_entry[2] = (tmp_entry[2] + A[k][row+2]*x[k  ] + A[k+1][row+2]*x[k+1] + A[k+2][row+2]*x[k+2] + A[k+3][row+2]*x[k+3] + A[k+4][row+2]*x[k+4] + A[k+5][row+2]*x[k+5] + A[k+6][row+2]*x[k+6] + A[k+7][row+2]*x[k+7]) % Q;
+            tmp_entry[3] = (tmp_entry[3] + A[k][row+3]*x[k  ] + A[k+1][row+3]*x[k+1] + A[k+2][row+3]*x[k+2] + A[k+3][row+3]*x[k+3] + A[k+4][row+3]*x[k+4] + A[k+5][row+3]*x[k+5] + A[k+6][row+3]*x[k+6] + A[k+7][row+3]*x[k+7]) % Q;
         }
         y[row    ] = (e[row    ] + tmp_entry[0])% Q;
         y[row + 1] = (e[row + 1] + tmp_entry[1])% Q;

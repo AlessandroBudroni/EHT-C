@@ -192,6 +192,53 @@ void inplace_row_permutation_in_transposed_form(FP A[N][M], u16 P[M])
     }
 }
 
+/* inplace row-permutation of matrix in its transposed form (so it is actually column permutation) and multiply times lambda2^-1*/
+void inplace_row_permutation_in_transposed_form_and_mul_ilambda2(FP A[N][M], u16 P[M])
+{
+	FP invlambda2 = inverse_mod((FP)LAMBDA2);
+    FP tempv;
+    uint8_t past_pos[M];
+    memset(past_pos, 0, M*sizeof(uint8_t));
+    int pos = 0, start = 0, dest = 0, processed = 0, point = 0;
+    dest = P[pos];
+
+    while(processed < M)
+    {
+        if(past_pos[dest] != 1)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                tempv = A[i][pos];
+                A[i][pos] = A[i][dest];
+                A[i][dest] = tempv;
+                A[i][pos] = (A[i][pos]*invlambda2)%Q;
+            }
+        }
+        else
+        {
+        	for (int i = 0; i < N; ++i)
+        		 A[i][pos] = (A[i][pos]*invlambda2)%Q;
+        }
+        processed++;
+        past_pos[pos] = 1;
+
+        // for (int i = 0; i < N; ++i)
+    	   //  A[i][pos] = (A[i][pos]*invlambda2)%Q;
+
+        if (start == dest && processed < M)
+        {
+            while(past_pos[point] == 1 && point<M)
+                point++;
+
+            pos = point;
+            start = pos;
+        }
+        else
+            pos = dest;
+        dest = P[pos];
+    }
+}
+
 /* row permutation of matrix in trasposed form (so it's a column permutation) */
 void row_permutation_in_transposed_form(FP A[N][M], FP tempA[N][M], FP P[M])
 {
@@ -246,24 +293,21 @@ void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, FP H[][N])
 
     // multiply C^-1 times TB to get A
     // multiply T times B and transpose automatically. This is needed to use the FWHT later.
-    FP tempA[N][M];
+    // FP tempA[N][M];
     for (int row = 0; row < M; row++)
         for (int col = 0; col < N; col++)
-            tempA[col][row] = (PrivateKey->T[row]*B[row/K][col]) % Q;
+            PublicKey->A[col][row] = (PrivateKey->T[row]*B[row/K][col]) % Q;
 
     // permute first TB with the inverse of P2
-    inplace_row_permutation_in_transposed_form(tempA, iP1);
-
-    // FP tempA2[N][M];
-    // row_permutation_in_transposed_form(tempA2, tempA, iP1);
+    inplace_row_permutation_in_transposed_form(PublicKey->A, iP1);
 
     // apply FHWT to the transpose of TB already permuted by iP1
     for (int row = 0; row < N; row++)
         for (int col = 0; col < M/LAMBDA2; col++)
-            FWHT(tempA[row]+LAMBDA2*col, LAMBDA2);
+            FWHT(PublicKey->A[row]+LAMBDA2*col, LAMBDA2);
 
-    // row permutation of tempA in its transpose form, then multiply by lambda2^-1. Return in the right form (not transposed)
-    row_permutation_and_transpose(PublicKey->A, tempA, iP2);
+    // row permutation of tempA in its transpose form, then multiply by lambda2^-1
+    inplace_row_permutation_in_transposed_form_and_mul_ilambda2(PublicKey->A, iP2);
 
     // precompute parity check for decryption, given paritycheck H, compute H*B^-1
     u32 t_entry;

@@ -37,7 +37,7 @@ typedef struct
 
 typedef struct
 {
-    FP A[M][N];
+    FP A[N][M]; // in transposed form
 } publicKey;
 
 typedef struct
