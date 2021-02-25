@@ -20,12 +20,12 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-
-#include "config.h"
 
 /* check and print */
 void ASSERT(int condition, const char* string, ...);
@@ -42,6 +42,6 @@ int get_seed();
 
 /* others */
 double normal_PDF(int x, double mean, double sigma);
-void FWHT (FP* data, int size);
+void FWHT(FP* data, int size);
 
 #endif

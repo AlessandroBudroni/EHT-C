@@ -26,12 +26,17 @@
 
 #include "config.h"
 #include "utils.h"
-#include "ciphersuite.h"
 #include "matrix.h"
+#include "ciphersuite.h"
 #include "encoding.h"
 
 void precompute_cdf_table();
+
+#ifdef FULL_STACK
 void generate_secret(FP Secret[N], FP G[][N-KDIM]);
+#else
+void generate_secret(FP Secret[N], matrix *G);
+#endif
 void EHT_encrypt(FP MasterSecret[N], cipherText *CipherText, publicKey *PublicKey);
 
 #endif

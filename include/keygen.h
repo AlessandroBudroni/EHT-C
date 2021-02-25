@@ -33,6 +33,21 @@
 void precompute_distribuion(privateKey *PrivateKey);
 
 // Hadamard key generation
+#ifdef FULL_STACK
 void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, FP H[][N]);
+#else
+void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, matrix *H);
+
+void calloc_privateKey(privateKey *PrivateKey);
+void calloc_publicKey(publicKey *PublicKey);
+void calloc_cipherText(cipherText *CipherText);
+void calloc_distribution(privateKey *PrivateKey);
+
+void free_privateKey(privateKey *PrivateKey);
+void free_distribution(privateKey *PrivateKey);
+void free_publicKey(publicKey *PublicKey);
+void free_cipherText(cipherText *CipherText);
+
+#endif
 
 #endif

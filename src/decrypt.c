@@ -25,18 +25,23 @@
 #include "decrypt.h"
 #include "encoding.h"
 
-
+#ifdef FULL_STACK
 void vector_permutation(FP result[M], FP vector[M], u16 P[M])
+#else
+void vector_permutation(FP *result, FP *vector, u16 *P)
+#endif /* FULL_STACK */
 {
-
     for (int i = 0; i < M; ++i)
         result[i] = vector[P[i]];
 }
 
 /* inplace row-permutation */
+#ifdef FULL_STACK
 void inplace_vector_permutation(FP vector[M], u16 P[M])
+#else
+void inplace_vector_permutation(FP *vector, u16 *P)
+#endif /* FULL_STACK */
 {
-
     FP tempv;
     uint8_t past_pos[M];
     memset(past_pos, 0, M*sizeof(uint8_t));
@@ -73,7 +78,11 @@ static FP b[N];
 static u16 tot_extra = 0;
 static FP extra_residue[MAX_EXTRA];
 static FP extra_position[MAX_EXTRA];
+#ifdef FULL_STACK
 static FP (*ptrBCode)[N];
+#else
+static matrix *ptrBCode;
+#endif
 
 int recursive_find_right_b(FP index)
 {

@@ -19,10 +19,6 @@
 
 
 #include "keygen.h"
-#include "ciphersuite.h"
-#include "matrix.h"
-
-#include <immintrin.h>
 
 #include <string.h>
 #include <stdint.h>
@@ -78,13 +74,6 @@ void precompute_distribuion(privateKey *PrivateKey)
 
     double sigma = SIGMA;
 
-#ifdef PRINT_STAMP
-    char stamp[200];
-    sprintf(stamp, "Compute distribution table");
-    time_stamp(stamp);
-#endif
-
-    // else, compute the distribution
     // error distribution table
     double pe[Q];
     memset(pe, 0, Q*sizeof(double));
@@ -101,16 +90,17 @@ void precompute_distribuion(privateKey *PrivateKey)
     for (int i = 0; i < Q; ++i)
         PrivateKey->pce[i] = PrivateKey->pce[i]<0.00000000001 ? -9999999 : log(Q*PrivateKey->pce[i]);
 
-#ifdef PRINT_STAMP
-    sprintf(stamp, "Done");
-    time_stamp(stamp);
-#endif
 }
+
 
 // Key generation using Hadamard matrices
 
 /* instead of permutation matrix, we store a list that represent the permutation matrix. This is used to speed up key generation and avoid large matrix multiplication */
+#ifdef FULL_STACK
 void get_permutations(u16 P1[M], u16 P2[M])
+#else
+void get_permutations(u16 *P1, u16 *P2)
+#endif
 {
 
     // seed for random generation
@@ -155,9 +145,12 @@ void get_permutations(u16 P1[M], u16 P2[M])
 }
 
 /* inplace row-permutation of matrix in its transposed form (so it is actually column permutation) */
+#ifdef FULL_STACK
 void inplace_row_permutation_in_transposed_form(FP A[N][M], u16 P[M])
+#else
+void inplace_row_permutation_in_transposed_form(matrix *A, u16 *P)
+#endif
 {
-
     FP tempv;
     uint8_t past_pos[M];
     memset(past_pos, 0, M*sizeof(uint8_t));
@@ -170,9 +163,15 @@ void inplace_row_permutation_in_transposed_form(FP A[N][M], u16 P[M])
         {
             for (int i = 0; i < N; ++i)
             {
+#ifdef FULL_STACK
                 tempv = A[i][pos];
                 A[i][pos] = A[i][dest];
                 A[i][dest] = tempv;
+#else
+                tempv = get_matrix_entry(A, i, pos);
+                set_matrix_entry(A, i, pos, get_matrix_entry(A, i, dest));
+                set_matrix_entry(A, i, dest, tempv);
+#endif /* FULL_STACK */
             }
         }
         processed++;
@@ -193,9 +192,13 @@ void inplace_row_permutation_in_transposed_form(FP A[N][M], u16 P[M])
 }
 
 /* inplace row-permutation of matrix in its transposed form (so it is actually column permutation) and multiply times lambda2^-1*/
+#ifdef FULL_STACK
 void inplace_row_permutation_in_transposed_form_and_mul_ilambda2(FP A[N][M], u16 P[M])
+#else
+void inplace_row_permutation_in_transposed_form_and_mul_ilambda2(matrix *A, u16 *P)
+#endif /* FULL_STACK */
 {
-	FP invlambda2 = inverse_mod((FP)LAMBDA2);
+    FP invlambda2 = inverse_mod((FP)LAMBDA2);
     FP tempv;
     uint8_t past_pos[M];
     memset(past_pos, 0, M*sizeof(uint8_t));
@@ -208,22 +211,33 @@ void inplace_row_permutation_in_transposed_form_and_mul_ilambda2(FP A[N][M], u16
         {
             for (int i = 0; i < N; ++i)
             {
+#ifdef FULL_STACK
                 tempv = A[i][pos];
                 A[i][pos] = A[i][dest];
                 A[i][dest] = tempv;
                 A[i][pos] = (A[i][pos]*invlambda2)%Q;
+#else
+                tempv = get_matrix_entry(A, i, pos);
+                set_matrix_entry(A, i, pos, get_matrix_entry(A, i, dest));
+                set_matrix_entry(A, i, dest, tempv);
+                set_matrix_entry(A, i, pos, (get_matrix_entry(A, i, pos)*invlambda2)%Q );
+#endif /* FULL_STACK */
             }
         }
         else
         {
-        	for (int i = 0; i < N; ++i)
-        		 A[i][pos] = (A[i][pos]*invlambda2)%Q;
+            for (int i = 0; i < N; ++i)
+#ifdef FULL_STACK
+                A[i][pos] = (A[i][pos]*invlambda2)%Q;
+#else
+                set_matrix_entry(A, i, pos, (get_matrix_entry(A, i, pos)*invlambda2)%Q );
+#endif /* FULL_STACK */
         }
         processed++;
         past_pos[pos] = 1;
 
         // for (int i = 0; i < N; ++i)
-    	   //  A[i][pos] = (A[i][pos]*invlambda2)%Q;
+        //  A[i][pos] = (A[i][pos]*invlambda2)%Q;
 
         if (start == dest && processed < M)
         {
@@ -239,40 +253,31 @@ void inplace_row_permutation_in_transposed_form_and_mul_ilambda2(FP A[N][M], u16
     }
 }
 
-/* row permutation of matrix in trasposed form (so it's a column permutation) */
-void row_permutation_in_transposed_form(FP A[N][M], FP tempA[N][M], FP P[M])
-{
-
-    FP invlambda2 = inverse_mod((FP)LAMBDA2);
-
-    for (int row = 0; row < M; row++)
-        for (int col = 0; col < N; col++)
-            A[col][row] = (tempA[col][P[row]]*invlambda2)%Q;
-}
-
-/* tempA is given in transpose form. Apply P1, multiply times lambda2^-1, return in the right form (not transpose) */
-void row_permutation_and_transpose(FP A[M][N], FP tempA[N][M], FP P[M])
-{
-
-    FP invlambda2 = inverse_mod((FP)LAMBDA2);
-
-    for (int row = 0; row < M; row++)
-        for (int col = 0; col < N; col++)
-            A[row][col] = (tempA[col][P[row]]*invlambda2)%Q;
-}
-
 
 /* generate public/private keypair with the Hadamard matrix-based approach */
+#ifdef FULL_STACK
 void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, FP H[][N])
+#else
+void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, matrix *H)
+#endif
 {
-
     // generate private B and its inverse
+#ifdef FULL_STACK
     FP B[N][N];
     do
     {
         random_matrix(B);
     }
     while(!invert_matrix(PrivateKey->inverseB, B) );
+#else
+    matrix B;
+    calloc_matrix(&B, N, N);
+    do
+    {
+        random_matrix(&B);
+    }
+    while(!invert_matrix(PrivateKey->inverseB, &B) );
+#endif
 
     // generate private T TODO make this random properly
     int seed = get_seed();
@@ -293,10 +298,13 @@ void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, FP H[][N])
 
     // multiply C^-1 times TB to get A
     // multiply T times B and transpose automatically. This is needed to use the FWHT later.
-    // FP tempA[N][M];
     for (int row = 0; row < M; row++)
         for (int col = 0; col < N; col++)
+#ifdef FULL_STACK
             PublicKey->A[col][row] = (PrivateKey->T[row]*B[row/K][col]) % Q;
+#else
+            set_matrix_entry(PublicKey->A, col, row, (PrivateKey->T[row]*get_matrix_entry(&B, row/K, col)) % Q);
+#endif /* FULL_STACK */
 
     // permute first TB with the inverse of P2
     inplace_row_permutation_in_transposed_form(PublicKey->A, iP1);
@@ -304,7 +312,11 @@ void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, FP H[][N])
     // apply FHWT to the transpose of TB already permuted by iP1
     for (int row = 0; row < N; row++)
         for (int col = 0; col < M/LAMBDA2; col++)
+#ifdef FULL_STACK
             FWHT(PublicKey->A[row]+LAMBDA2*col, LAMBDA2);
+#else
+            FWHT(PublicKey->A->buff+row*M+LAMBDA2*col, LAMBDA2);
+#endif /* FULL_STACK */
 
     // row permutation of tempA in its transpose form, then multiply by lambda2^-1
     inplace_row_permutation_in_transposed_form_and_mul_ilambda2(PublicKey->A, iP2);
@@ -317,20 +329,110 @@ void EHT_keygen(privateKey *PrivateKey, publicKey *PublicKey, FP H[][N])
         {
             t_entry = 0;
             for (u16 k = 0; k < N; k+=8)
-                t_entry = (t_entry + H[row][k  ]*PrivateKey->inverseB[k  ][col]
+#ifdef FULL_STACK
+                t_entry += H[row][k]*PrivateKey->inverseB[k][col]
                            + H[row][k+1]*PrivateKey->inverseB[k+1][col]
                            + H[row][k+2]*PrivateKey->inverseB[k+2][col]
                            + H[row][k+3]*PrivateKey->inverseB[k+3][col]
                            + H[row][k+4]*PrivateKey->inverseB[k+4][col]
                            + H[row][k+5]*PrivateKey->inverseB[k+5][col]
                            + H[row][k+6]*PrivateKey->inverseB[k+6][col]
-                           + H[row][k+7]*PrivateKey->inverseB[k+7][col]);
+                           + H[row][k+7]*PrivateKey->inverseB[k+7][col];
             PrivateKey->BCode[row][col] = t_entry % Q;
+
+#else
+                t_entry += get_matrix_entry(H, row, k)*get_matrix_entry(PrivateKey->inverseB, k, col)
+                           + get_matrix_entry(H, row, k+1)*get_matrix_entry(PrivateKey->inverseB, k+1, col)
+                           + get_matrix_entry(H, row, k+2)*get_matrix_entry(PrivateKey->inverseB, k+2, col)
+                           + get_matrix_entry(H, row, k+3)*get_matrix_entry(PrivateKey->inverseB, k+3, col)
+                           + get_matrix_entry(H, row, k+4)*get_matrix_entry(PrivateKey->inverseB, k+4, col)
+                           + get_matrix_entry(H, row, k+5)*get_matrix_entry(PrivateKey->inverseB, k+5, col)
+                           + get_matrix_entry(H, row, k+6)*get_matrix_entry(PrivateKey->inverseB, k+6, col)
+                           + get_matrix_entry(H, row, k+7)*get_matrix_entry(PrivateKey->inverseB, k+7, col);
+            set_matrix_entry(PrivateKey->BCode, row, col, t_entry % Q);
+#endif /* FULL_STACK */
         }
     }
-
+#ifndef FULL_STACK
+    free_matrix(&B);
+#endif
 }
 
 
+#ifndef FULL_STACK
 
+void calloc_privateKey(privateKey *PrivateKey)
+{
+
+    PrivateKey->P1 = (FP*)calloc(M, sizeof(FP));
+    PrivateKey->P2 = (FP*)calloc(M, sizeof(FP));
+    PrivateKey->T = (FP*)calloc(M, sizeof(FP));
+    PrivateKey->inverseB = (matrix*)calloc(1, sizeof(matrix));
+    PrivateKey->BCode = (matrix*)calloc(1, sizeof(matrix));
+
+    calloc_matrix(PrivateKey->inverseB, N, N);
+    calloc_matrix(PrivateKey->BCode, KDIM, N);
+
+    ASSERT(PrivateKey->P1 != NULL && PrivateKey->P2 != NULL &&
+           PrivateKey->T != NULL && PrivateKey->inverseB != NULL, "failed allocating privateKey");
+}
+
+void calloc_publicKey(publicKey *PublicKey)
+{
+
+    PublicKey->A = (matrix*)calloc(1, sizeof(matrix));
+
+    calloc_matrix(PublicKey->A, N, M); // transposed
+
+    ASSERT(PublicKey->A != NULL, "failed allocating publicKey");
+}
+
+void calloc_cipherText(cipherText *CipherText)
+{
+
+    CipherText->y = (FP*)calloc(M, sizeof(FP));
+
+    ASSERT(CipherText->y != NULL, "failed allocating cipherText");
+}
+
+void calloc_distribution(privateKey *PrivateKey)
+{
+
+    PrivateKey->pce = (double*)calloc(Q, sizeof(double));
+
+    ASSERT(PrivateKey->pce != NULL, "failed allocating distribution for privateKey");
+}
+
+void free_privateKey(privateKey *PrivateKey)
+{
+
+    free(PrivateKey->P1);
+    free(PrivateKey->P2);
+    free(PrivateKey->T);
+    free_matrix(PrivateKey->inverseB);
+    free(PrivateKey->inverseB);
+    free_matrix(PrivateKey->BCode);
+    free(PrivateKey->BCode);
+}
+
+void free_distribution(privateKey *PrivateKey)
+{
+
+    free(PrivateKey->pce);
+}
+
+void free_publicKey(publicKey *PublicKey)
+{
+
+    free_matrix(PublicKey->A);
+    free(PublicKey->A);
+}
+
+void free_cipherText(cipherText *CipherText)
+{
+
+    free(CipherText->y);
+}
+
+#endif /* FULL_STACK */
 

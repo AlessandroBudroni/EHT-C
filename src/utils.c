@@ -84,7 +84,7 @@ int get_seed()
     ASSERT(ret > 0, "could not read from /dev/urandom in get_seed");
     close(randomData);
 
-    return seed;
+    return 0;
 }
 
 /* Access system counter for benchmarking */
@@ -145,3 +145,5 @@ void FWHT (FP* data, int size)
         }
     }
 }
+
+

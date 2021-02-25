@@ -22,13 +22,15 @@
 #define CIPHERSUITE_H
 
 #include "config.h"
-#include "matrix.h"
+#include "utils.h"
+
+#ifdef FULL_STACK
 
 typedef struct
 {
     // FP RepC[M][LAMBDA2][2];  // CA = TB mod Q
-    FP P1[M];
-    FP P2[M];
+    u16 P1[M];
+    u16 P2[M];
     FP T[M];
     FP inverseB[N][N];
     double pce[Q];  // distribution associated to the row-vectors of C
@@ -44,5 +46,29 @@ typedef struct
 {
     FP y[M];  // y = As + e mod q
 } cipherText;
+
+#else
+
+typedef struct
+{
+    u16 *P1;  // CA = TB mod Q
+    u16 *P2;
+    FP *T;
+    matrix *inverseB;
+    double *pce;  // distribution associated to the row-vectors of C
+    matrix *BCode;
+} privateKey;
+
+typedef struct
+{
+    matrix *A;
+} publicKey;
+
+typedef struct
+{
+    FP *y;  // y = As + e mod q
+} cipherText;
+
+#endif /* FULL_STACK */
 
 #endif

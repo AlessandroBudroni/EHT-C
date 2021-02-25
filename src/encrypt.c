@@ -45,7 +45,11 @@ void precompute_cdf_table()
 /* Generate random secret - NOT SECURE
 	generate N-KDIM entries at random, then encode.
 */
+#ifdef FULL_STACK
 void generate_secret(FP Secret[N], FP G[][N-KDIM])
+#else
+void generate_secret(FP Secret[N], matrix *G)
+#endif
 {
 
     // get seed for RNG
@@ -61,9 +65,9 @@ void generate_secret(FP Secret[N], FP G[][N-KDIM])
 }
 
 /* Adapted from https://github.com/Microsoft/PQCrypto-LWEKE, under licence MIT. NOT CONSTANT TIME. */
-void sample_error(FP *s, const size_t n)
+void sample_error(FP *s)
 {
-    // Fills vector s with n samples from the noise distribution which requires 16 bits to sample.
+    // Fills vector s with M samples from the noise distribution which requires 16 bits to sample.
     // The distribution is specified by its CDF.
     // Input: The input is overwritten by the output.
 
@@ -73,12 +77,12 @@ void sample_error(FP *s, const size_t n)
     // initialize RNG
     srand((unsigned) seed);
 
-    for (u16 row = 0; row < n; row++)
+    for (u16 row = 0; row < M; row++)
         s[row] = (FP)(rand());
 
     unsigned int i, j;
 
-    for (i = 0; i < n; ++i)
+    for (i = 0; i < M; ++i)
     {
         FP sample = 0;
         FP prnd = s[i] >> 1;    // Drop the least significant bit
@@ -96,7 +100,11 @@ void sample_error(FP *s, const size_t n)
 }
 
 /* Faster encryption y = Ax+e. A is given in transposed form. */
+#ifdef FULL_STACK
 void mul_times_secret_plus_error(FP y[M], FP A[][M], FP x[N], FP e[M])
+#else
+void mul_times_secret_plus_error(FP *y, matrix *A, FP *x, FP e[M])
+#endif
 {
 
     FP tmp_entry[4];
@@ -109,10 +117,17 @@ void mul_times_secret_plus_error(FP y[M], FP A[][M], FP x[N], FP e[M])
         tmp_entry[3] = 0;
         for (u16 k = 0; k < N; k+=8)
         {
+#ifdef FULL_STACK
             tmp_entry[0] = (tmp_entry[0] + A[k][row  ]*x[k  ] + A[k+1][row  ]*x[k+1] + A[k+2][row  ]*x[k+2] + A[k+3][row  ]*x[k+3] + A[k+4][row  ]*x[k+4] + A[k+5][row  ]*x[k+5] + A[k+6][row  ]*x[k+6] + A[k+7][row  ]*x[k+7]) % Q;
             tmp_entry[1] = (tmp_entry[1] + A[k][row+1]*x[k  ] + A[k+1][row+1]*x[k+1] + A[k+2][row+1]*x[k+2] + A[k+3][row+1]*x[k+3] + A[k+4][row+1]*x[k+4] + A[k+5][row+1]*x[k+5] + A[k+6][row+1]*x[k+6] + A[k+7][row+1]*x[k+7]) % Q;
             tmp_entry[2] = (tmp_entry[2] + A[k][row+2]*x[k  ] + A[k+1][row+2]*x[k+1] + A[k+2][row+2]*x[k+2] + A[k+3][row+2]*x[k+3] + A[k+4][row+2]*x[k+4] + A[k+5][row+2]*x[k+5] + A[k+6][row+2]*x[k+6] + A[k+7][row+2]*x[k+7]) % Q;
             tmp_entry[3] = (tmp_entry[3] + A[k][row+3]*x[k  ] + A[k+1][row+3]*x[k+1] + A[k+2][row+3]*x[k+2] + A[k+3][row+3]*x[k+3] + A[k+4][row+3]*x[k+4] + A[k+5][row+3]*x[k+5] + A[k+6][row+3]*x[k+6] + A[k+7][row+3]*x[k+7]) % Q;
+#else
+            tmp_entry[0] = (tmp_entry[0] + get_matrix_entry(A, k, row  )*x[k  ] + get_matrix_entry(A, k+1, row  )*x[k+1] + get_matrix_entry(A, k+2, row  )*x[k+2] + get_matrix_entry(A, k+3, row  )*x[k+3] + get_matrix_entry(A, k+4, row  )*x[k+4] + get_matrix_entry(A, k+5, row  )*x[k+5] + get_matrix_entry(A, k+6, row  )*x[k+6] + get_matrix_entry(A, k+7, row  )*x[k+7]) % Q;
+            tmp_entry[1] = (tmp_entry[1] + get_matrix_entry(A, k, row+1)*x[k  ] + get_matrix_entry(A, k+1, row+1)*x[k+1] + get_matrix_entry(A, k+2, row+1)*x[k+2] + get_matrix_entry(A, k+3, row+1)*x[k+3] + get_matrix_entry(A, k+4, row+1)*x[k+4] + get_matrix_entry(A, k+5, row+1)*x[k+5] + get_matrix_entry(A, k+6, row+1)*x[k+6] + get_matrix_entry(A, k+7, row+1)*x[k+7]) % Q;
+            tmp_entry[2] = (tmp_entry[2] + get_matrix_entry(A, k, row+2)*x[k  ] + get_matrix_entry(A, k+1, row+2)*x[k+1] + get_matrix_entry(A, k+2, row+2)*x[k+2] + get_matrix_entry(A, k+3, row+2)*x[k+3] + get_matrix_entry(A, k+4, row+2)*x[k+4] + get_matrix_entry(A, k+5, row+2)*x[k+5] + get_matrix_entry(A, k+6, row+2)*x[k+6] + get_matrix_entry(A, k+7, row+2)*x[k+7]) % Q;
+            tmp_entry[3] = (tmp_entry[3] + get_matrix_entry(A, k, row+3)*x[k  ] + get_matrix_entry(A, k+1, row+3)*x[k+1] + get_matrix_entry(A, k+2, row+3)*x[k+2] + get_matrix_entry(A, k+3, row+3)*x[k+3] + get_matrix_entry(A, k+4, row+3)*x[k+4] + get_matrix_entry(A, k+5, row+3)*x[k+5] + get_matrix_entry(A, k+6, row+3)*x[k+6] + get_matrix_entry(A, k+7, row+3)*x[k+7]) % Q;
+#endif
         }
         y[row    ] = (e[row    ] + tmp_entry[0])% Q;
         y[row + 1] = (e[row + 1] + tmp_entry[1])% Q;
@@ -127,7 +142,7 @@ void EHT_encrypt(FP MasterSecret[N], cipherText *CipherText, publicKey *PublicKe
 {
 
     FP e[M];
-    sample_error(e, M);
+    sample_error(e);
     mul_times_secret_plus_error(CipherText->y, PublicKey->A, MasterSecret, e);
 
 }

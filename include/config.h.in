@@ -40,6 +40,7 @@
 #define PRIu16 "hu"
 
 #define ${PROTOCOL_VERSION}
+#define ${MEMORY_MODE}
 
 /* parameters of the protocol */
 #if defined(EHT_light_A)
@@ -128,15 +129,15 @@
 
 #else
 
-#define Q 19       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
+#define Q 199       // modulo - IT MUST BE PRIME, otherwise the Little Fermat Theorem does not work.
 #define N 32
 #define K 8
 #define LAMBDA2 4
-#define SIGMA 4
+#define SIGMA 1
 #define M K*N
 #define R (K*N)/LAMBDA2
 #define PRECISION 4*SIGMA
-#define CDF_TABLE_LEN 18
+#define CDF_TABLE_LEN 6
 #define KDIM 2
 #define SIZE_SEARCH // size of the quick pre-computation in decryption
 

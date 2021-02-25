@@ -30,34 +30,63 @@
 
 #define BENCH_LOOPS 10
 
+/* run benchmark test - count CPU loops */
 static void benchmark()
 {
+
+    time_stamp("Parameters: n %d, q %d, k %d, m %d, lambda^2 %d, sigma %f", (int)N, (int)Q, (int)K, (int)M, (int)LAMBDA2, (float)SIGMA);
+
+    unsigned long long cycles_keygen = 0, cycles_encaps = 0, cycles_decaps = 0, cycles1, cycles2;
 
     privateKey PrivateKey;
     publicKey PublicKey;
     cipherText CipherText;
-    FP ClientMasterSecret[N], ServerMasterSecret[N];
 
-    // precomputation
-    FP G[KDIM][N-KDIM], H[KDIM][N];
-    precompute_cdf_table();
+#ifndef FULL_STACK
+    calloc_privateKey(&PrivateKey);
+    calloc_distribution(&PrivateKey);
+    calloc_publicKey(&PublicKey);
+    calloc_cipherText(&CipherText);
+#endif
+
+    time_stamp("Precompute distribution");
     precompute_distribuion(&PrivateKey);
+
+    time_stamp("Precompute CDF table");
+    precompute_cdf_table();
+
+    time_stamp("Precompute generator G and parity-check H");
+#ifdef FULL_STACK
+    FP G[N][N-KDIM], H[KDIM][N];
     precompute_G_H(G, H);
+#else
+    matrix G, H;
+    calloc_matrix(&G, N, N-KDIM);
+    calloc_matrix(&H, KDIM, N);
+    precompute_G_H(&G, &H);
+#endif
 
-    unsigned long long cycles_keygen = 0, cycles_encaps = 0, cycles_decaps = 0, cycles1, cycles2;
-
-    time_stamp("Parameters: n %d, q %d, k %d, m %d, lambda^2 %d, sigma %f", (int)N, (int)Q, (int)K, (int)M, (int)LAMBDA2, (float)SIGMA);
+    // generate client's master secret
+    FP ClientMasterSecret[N], ServerMasterSecret[N];
 
     for (int i = 0; i < BENCH_LOOPS; ++i)
     {
         cycles1 = cpucycles();
+#ifdef FULL_STACK
         EHT_keygen(&PrivateKey, &PublicKey, H);
+#else
+        EHT_keygen(&PrivateKey, &PublicKey, &H);
+#endif
         cycles2 = cpucycles();
         cycles_keygen = cycles_keygen+(cycles2-cycles1);
 
         // Benchmarking encapsulation
         cycles1 = cpucycles();
+#ifdef FULL_STACK
         generate_secret(ClientMasterSecret, G);
+#else
+        generate_secret(ClientMasterSecret, &G);
+#endif
         EHT_encrypt(ClientMasterSecret, &CipherText, &PublicKey);
         cycles2 = cpucycles();
         cycles_encaps = cycles_encaps+(cycles2-cycles1);
@@ -87,6 +116,15 @@ static void benchmark()
     printf("  Encryption + Decryption runs in .............................. %10lld ", tot_cycles  );
     printf("cycles");
     printf("\n");
+
+#ifndef FULL_STACK
+    free_distribution(&PrivateKey);
+    free_privateKey(&PrivateKey);
+    free_publicKey(&PublicKey);
+    free_cipherText(&CipherText);
+    free_matrix(&G);
+    free_matrix(&H);
+#endif
 
 }
 

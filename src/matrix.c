@@ -21,10 +21,54 @@
 #include "string.h"
 
 
-/* Generate random matrix N_rows x n_cols, allocation must be done externally */
-void random_matrix(FP A[][N])
+#ifndef FULL_STACK
+/* (c)allocate memory for matrix*/
+void calloc_matrix(matrix *Matrix, u16 N_rows, u16 N_cols)
 {
 
+    Matrix->buff = (FP*)calloc((u32)N_cols*(u32)N_rows, sizeof(FP));
+    ASSERT(Matrix->buff != NULL, "failed allocating memory for matrix");
+
+    Matrix->n_cols = N_cols;
+    Matrix->n_rows = N_rows;
+}
+
+/* free memory for a matrix struct */
+void free_matrix(matrix *Matrix)
+{
+
+    if(!Matrix->buff)
+        return;
+    if(Matrix->buff)
+        free(Matrix->buff);
+
+    Matrix->n_cols = 0;
+    Matrix->n_rows = 0;
+}
+
+/* Set matrix entry, count from 0 to n_rows-1, from 0 to n_cols-1 */
+void set_matrix_entry(matrix *Matrix, u16 row, u16 col, FP value)
+{
+
+    Matrix->buff[Matrix->n_cols*row + col] = value;
+}
+
+/* Get matrix entry, count from 0 to n_rows-1, from 0 to n_cols-1 */
+FP get_matrix_entry(matrix *Matrix, u16 row, u16 col)
+{
+
+    return Matrix->buff[Matrix->n_cols*row + col];
+}
+
+#endif /* FULL_STACK */
+
+/* Generate random matrix N_rows x n_cols, allocation must be done externally */
+#ifdef FULL_STACK
+void random_matrix(FP A[][N])
+#else
+void random_matrix(matrix *A)
+#endif
+{
     // get seed for RNG
     int seed = get_seed();
 
@@ -33,15 +77,20 @@ void random_matrix(FP A[][N])
 
     for (u16 row = 0; row < N; row++)
         for (u16 col = 0; col < N; col++)
+#ifdef FULL_STACK
             A[row][col] = (FP)(rand()%Q);
+#else
+            set_matrix_entry(A, row, col, (FP)(rand()%Q));
+#endif
 }
 
 /* Return s = B*b */
+#ifdef FULL_STACK
 void fast_matrix_mul_times_vector(FP s[N], FP B[][N], FP b[N])
+#else
+void fast_matrix_mul_times_vector(FP *s, matrix *B, FP *b)
+#endif
 {
-
-    // ASSERT( N % 8 == 0, "m is not a multiple of 8.");
-
     FP tmp_entry[4];
 
     for (u16 row = 0; row < N; row+=4)
@@ -52,10 +101,17 @@ void fast_matrix_mul_times_vector(FP s[N], FP B[][N], FP b[N])
         tmp_entry[3] = 0;
         for (u16 k = 0; k < N; k+=8)
         {
+#ifdef FULL_STACK
             tmp_entry[0] = (tmp_entry[0] + B[row  ][k]*b[k  ] + B[row  ][k+1]*b[k+1] + B[row  ][k+2]*b[k+2] + B[row  ][k+3]*b[k+3] + B[row  ][k+4]*b[k+4] + B[row  ][k+5]*b[k+5] + B[row  ][k+6]*b[k+6] + B[row  ][k+7]*b[k+7]) % Q;
             tmp_entry[1] = (tmp_entry[1] + B[row+1][k]*b[k  ] + B[row+1][k+1]*b[k+1] + B[row+1][k+2]*b[k+2] + B[row+1][k+3]*b[k+3] + B[row+1][k+4]*b[k+4] + B[row+1][k+5]*b[k+5] + B[row+1][k+6]*b[k+6] + B[row+1][k+7]*b[k+7]) % Q;
             tmp_entry[2] = (tmp_entry[2] + B[row+2][k]*b[k  ] + B[row+2][k+1]*b[k+1] + B[row+2][k+2]*b[k+2] + B[row+2][k+3]*b[k+3] + B[row+2][k+4]*b[k+4] + B[row+2][k+5]*b[k+5] + B[row+2][k+6]*b[k+6] + B[row+2][k+7]*b[k+7]) % Q;
             tmp_entry[3] = (tmp_entry[3] + B[row+3][k]*b[k  ] + B[row+3][k+1]*b[k+1] + B[row+3][k+2]*b[k+2] + B[row+3][k+3]*b[k+3] + B[row+3][k+4]*b[k+4] + B[row+3][k+5]*b[k+5] + B[row+3][k+6]*b[k+6] + B[row+3][k+7]*b[k+7]) % Q;
+#else
+            tmp_entry[0] = (tmp_entry[0] + get_matrix_entry(B, row, k)*b[k  ] + get_matrix_entry(B, row, k+1)*b[k+1] + get_matrix_entry(B, row, k+2)*b[k+2] + get_matrix_entry(B, row, k+3)*b[k+3] + get_matrix_entry(B, row, k+4)*b[k+4] + get_matrix_entry(B, row, k+5)*b[k+5] + get_matrix_entry(B, row, k+6)*b[k+6] + get_matrix_entry(B, row, k+7)*b[k+7]) % Q;
+            tmp_entry[1] = (tmp_entry[1] + get_matrix_entry(B, row +1, k)*b[k  ] + get_matrix_entry(B, row +1, k+1)*b[k+1] + get_matrix_entry(B, row +1, k+2)*b[k+2] + get_matrix_entry(B, row +1, k+3)*b[k+3] + get_matrix_entry(B, row +1, k+4)*b[k+4] + get_matrix_entry(B, row +1, k+5)*b[k+5] + get_matrix_entry(B, row +1, k+6)*b[k+6] + get_matrix_entry(B, row +1, k+7)*b[k+7]) % Q;
+            tmp_entry[2] = (tmp_entry[2] + get_matrix_entry(B, row +2, k)*b[k  ] + get_matrix_entry(B, row +2, k+1)*b[k+1] + get_matrix_entry(B, row +2, k+2)*b[k+2] + get_matrix_entry(B, row +2, k+3)*b[k+3] + get_matrix_entry(B, row +2, k+4)*b[k+4] + get_matrix_entry(B, row +2, k+5)*b[k+5] + get_matrix_entry(B, row +2, k+6)*b[k+6] + get_matrix_entry(B, row +2, k+7)*b[k+7]) % Q;
+            tmp_entry[3] = (tmp_entry[3] + get_matrix_entry(B, row +3, k)*b[k  ] + get_matrix_entry(B, row +3, k+1)*b[k+1] + get_matrix_entry(B, row +3, k+2)*b[k+2] + get_matrix_entry(B, row +3, k+3)*b[k+3] + get_matrix_entry(B, row +3, k+4)*b[k+4] + get_matrix_entry(B, row +3, k+5)*b[k+5] + get_matrix_entry(B, row +3, k+6)*b[k+6] + get_matrix_entry(B, row +3, k+7)*b[k+7]) % Q;
+#endif
         }
         s[row    ] = tmp_entry[0];
         s[row + 1] = tmp_entry[1];
@@ -66,9 +122,12 @@ void fast_matrix_mul_times_vector(FP s[N], FP B[][N], FP b[N])
 }
 
 /* return 1 if A==B, otherwise 0 */
+#ifdef FULL_STACK
 int vector_equal(u16 n, FP A[n], FP B[n])
+#else
+int vector_equal(u16 n, FP *A, FP *B)
+#endif
 {
-
     for (int i = 0; i < n; i++)
     {
         if (A[i] != B[i])
@@ -100,6 +159,7 @@ int matrix_equal(u16 n_rows, u16 n_cols, FP A[][n_cols], FP B[][n_cols]){
 */
 
 /* swap i-th and j-th rows of A */
+#ifdef FULL_STACK
 void swap_rows(u16 i, u16 j, u16 n_cols, FP A[][n_cols])
 {
 
@@ -195,6 +255,113 @@ int invert_matrix(FP inverseC[][N], FP C[][N])
 
     return 1;
 }
+#else
+void swap_rows(matrix *A, u16 i, u16 j)
+{
+
+    u16 n_cols = A->n_cols;
+    FP tmpRow[n_cols];
+    memcpy(tmpRow, A->buff + n_cols*i, n_cols*sizeof(FP));
+    memcpy(A->buff + n_cols*i, A->buff + n_cols*j, n_cols*sizeof(FP));
+    memcpy(A->buff + n_cols*j, tmpRow, n_cols*sizeof(FP));
+}
+
+/* Use Gaussian Elimination on the concatenation matrix C|I to get I|C^-1. Save C^-1 in inverseC
+    return 1 if success, return 0 if matrix is not invertible.
+*/
+int invert_matrix(matrix *inverseC, matrix *C)
+{
+
+    ASSERT(C->n_cols == C->n_rows && C->n_cols != 0, "trying to invert a non-square or an empty matrix");
+
+    u16 n = C->n_cols; // order of the matrix
+
+    matrix CI;
+    calloc_matrix(&CI, n, 2*n);
+
+    // copy matrix C in CI, then concatenate with I
+
+    for (u16 i = 0; i < C->n_rows; i++)
+        for (u16 j = 0; j < C->n_cols; j++)
+            set_matrix_entry(&CI, i, j, get_matrix_entry(C, i, j));
+
+
+    for (u16 i = 0; i < n; ++i)
+        set_matrix_entry(&CI, i, n+i, 1);
+
+    //loop for the generation of diagonal matrix I|C^-1
+    int pt;
+    FP c;
+    for(u16 j = 0; j < n; j++)
+    {
+        for(u16 i = 0; i < n; i++)
+        {
+            if (i > j) // upper triangolar
+            {
+                c = make_FP(get_matrix_entry(&CI, i, j) * inverse_mod(get_matrix_entry(&CI, j, j)));
+                for(u16 k = 0; k < 2*n; k++)
+                    set_matrix_entry(&CI, i, k, make_FP(get_matrix_entry(&CI, i, k) -(c * get_matrix_entry(&CI, j, k)) %Q) );
+            }
+            else if( i == j) // put 1 in diagonal
+            {
+                if (get_matrix_entry(&CI, i, j) == 0)
+                {
+                    pt = i;
+                    while(1)
+                    {
+                        if (pt == n)
+                        {
+                            free_matrix(&CI);
+                            return 0; // matrix non invertible
+                        }
+
+                        if(get_matrix_entry(&CI, pt, j) == 0)
+                            pt++;
+                        else
+                            break;
+                    }
+                    swap_rows(&CI, i, pt);
+                }
+                c = inverse_mod(get_matrix_entry(&CI, i, j));
+                for(u16 k = 0; k < 2*n; k++)
+                {
+                    set_matrix_entry(&CI, i, k, make_FP((c * get_matrix_entry(&CI, i, k)) %Q) );
+                }
+            }
+        }
+        for (int l = j-1; l >= 0; l--) // make diagonal
+        {
+            c = get_matrix_entry(&CI, l, j);
+            if (c != 0)
+            {
+                for (int k = 0; k < 2*n; k++)
+                {
+                    set_matrix_entry(&CI, l, k, make_FP(get_matrix_entry(&CI, l, k) -(c * get_matrix_entry(&CI, j, k)) %Q) );
+                }
+            }
+        }
+    }
+
+    // check that the matrix was actually invertible, or if for some reason it failed in putting the diagonal I
+    for (int i = 0; i < n; i++)
+    {
+        if (get_matrix_entry(&CI, i, i) != 1)
+        {
+            free_matrix(&CI);
+            return 0;
+        }
+    }
+
+    // copy inverse of C
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            set_matrix_entry(inverseC, i, j, get_matrix_entry(&CI, i, n+j) );
+
+    free_matrix(&CI);
+    return 1;
+}
+#endif
+
 
 // /* print matrix to stdout */
 // void print_matrix(u16 n_rows, u16 n_cols, FP Matrix[][n_cols]){

@@ -24,6 +24,7 @@
 #include "config.h"
 #include "utils.h"
 
+#ifdef FULL_STACK
 /* sample random square NxN matrix */
 void random_matrix(FP A[][N]);
 
@@ -38,5 +39,29 @@ void fast_matrix_mul_times_vector(FP s[N], FP B[][N], FP b[N]);
 /* stdout utilities */
 // void print_matrix(u16 n_rows, u16 n_cols, FP Matrix[][n_cols]);
 // void print_vector(u16 lenght, FP Vector[lenght]);
+
+#else
+
+typedef struct
+{
+    FP *buff;
+    u16 n_rows;
+    u16 n_cols;
+} matrix;
+
+void random_matrix(matrix *A);
+
+void calloc_matrix(matrix *Matrix, u16 N_rows, u16 N_cols);
+void free_matrix(matrix *Matrix);
+
+void set_matrix_entry(matrix *Matrix, u16 row, u16 col, FP value);
+FP get_matrix_entry(matrix *Matrix, u16 row, u16 col);
+
+int vector_equal(u16 n, FP *A, FP *B);
+
+int invert_matrix(matrix *inverseC, matrix *C);
+void fast_matrix_mul_times_vector(FP *s, matrix *B, FP *b);
+#endif /* FULL_STACK */
+
 
 #endif

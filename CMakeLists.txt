@@ -11,10 +11,15 @@ endmacro()
 # set building options
 set(CMAKE_VERBOSE_MAKEFILE "FALSE" CACHE STRING "Cmake verbose output")
 option(BUILD_TESTING "Build tests" "ON")
-option(BUILD_BENCHMARK "Build tests" "ON")
 
 if("${CMAKE_BUILD_TYPE} " STREQUAL " ") # workaround to keep Release as default
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Compiler flags mode" FORCE) # the altenratives are Test and Coverage
+endif()
+
+if("${FULL_STACK}" STREQUAL "ON") # workaround to keep Release as default
+  set(MEMORY_MODE "FULL_STACK" CACHE STRING "Memory mode" FORCE)
+else()
+  set(MEMORY_MODE "STACK_HEAP" CACHE STRING "Memory mode" FORCE)
 endif()
 
 log(PROTOCOL_VERSION)
@@ -55,7 +60,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
     elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
     	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -std=c11 -g -O0 -m64 -D_FILE_OFFSET_BITS=64 -static-libgcc -Wformat=0 -Werror -Wno-unused-function -Wno-unused-result -Wno-strict-prototypes -Wcast-align -Wunused-value -Wunused-variable -Wundef -pedantic")
     elseif(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -g --coverage -O0 -m64 -D_FILE_OFFSET_BITS=64 -static-libgcc -Wformat=0 -Werror -Wno-unused-function -Wno-unused-result -Wno-strict-prototypes -Wcast-align -Wunused-value -Wunused-variable -Wundef -pedantic")
+    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -std=c11 -g --coverage -O0 -m64 -D_FILE_OFFSET_BITS=64 -static-libgcc -Wformat=0 -Werror -Wno-unused-function -Wno-unused-result -Wno-strict-prototypes -Wcast-align -Wunused-value -Wunused-variable -Wundef -pedantic")
     else()
     	message( FATAL_ERROR "CMAKE_BUILD_TYPE not valid")
     endif()

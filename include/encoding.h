@@ -29,8 +29,14 @@
 #include "utils.h"
 #include "matrix.h"
 
+#ifdef FULL_STACK
 void precompute_G_H(FP G[][N-KDIM], FP H[][N]);
 void encode(FP Secret[N], FP G[][N-KDIM]);
 int decode(FP Codeword[N], FP H[][N]);
+#else
+void precompute_G_H(matrix *G, matrix *H);
+void encode(FP *Secret, matrix *G);
+int decode(FP *Codeword, matrix *H);
+#endif
 
 #endif
