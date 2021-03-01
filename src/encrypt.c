@@ -101,9 +101,9 @@ void sample_error(FP *s)
 
 /* Faster encryption y = Ax+e. A is given in transposed form. */
 #ifdef FULL_STACK
-void mul_times_secret_plus_error(FP y[M], FP A[][M], FP x[N], FP e[M])
+void mul_times_secret_plus_error(FP y[M], FP A[][M], FP x[N])
 #else
-void mul_times_secret_plus_error(FP *y, matrix *A, FP *x, FP e[M])
+void mul_times_secret_plus_error(FP *y, matrix *A, FP *x)
 #endif
 {
 
@@ -142,6 +142,6 @@ void EHT_encrypt(FP MasterSecret[N], cipherText *CipherText, publicKey *PublicKe
 {
 
     sample_error(CipherText->y);
-    mul_times_secret_plus_error(CipherText->y, PublicKey->A, MasterSecret, e);
+    mul_times_secret_plus_error(CipherText->y, PublicKey->A, MasterSecret);
 
 }
