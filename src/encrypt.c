@@ -107,32 +107,32 @@ void mul_times_secret_plus_error(FP *y, matrix *A, FP *x, FP e[M])
 #endif
 {
 
-    FP tmp_entry[4];
+    FP tmp_entry0, tmp_entry1, tmp_entry2, tmp_entry3;
 
     for (u16 row = 0; row < M; row+=4)
     {
-        tmp_entry[0] = 0;
-        tmp_entry[1] = 0;
-        tmp_entry[2] = 0;
-        tmp_entry[3] = 0;
+        tmp_entry0 = 0;
+        tmp_entry1 = 0;
+        tmp_entry2 = 0;
+        tmp_entry3 = 0;
         for (u16 k = 0; k < N; k+=8)
         {
 #ifdef FULL_STACK
-            tmp_entry[0] = (tmp_entry[0] + A[k][row  ]*x[k  ] + A[k+1][row  ]*x[k+1] + A[k+2][row  ]*x[k+2] + A[k+3][row  ]*x[k+3] + A[k+4][row  ]*x[k+4] + A[k+5][row  ]*x[k+5] + A[k+6][row  ]*x[k+6] + A[k+7][row  ]*x[k+7]) % Q;
-            tmp_entry[1] = (tmp_entry[1] + A[k][row+1]*x[k  ] + A[k+1][row+1]*x[k+1] + A[k+2][row+1]*x[k+2] + A[k+3][row+1]*x[k+3] + A[k+4][row+1]*x[k+4] + A[k+5][row+1]*x[k+5] + A[k+6][row+1]*x[k+6] + A[k+7][row+1]*x[k+7]) % Q;
-            tmp_entry[2] = (tmp_entry[2] + A[k][row+2]*x[k  ] + A[k+1][row+2]*x[k+1] + A[k+2][row+2]*x[k+2] + A[k+3][row+2]*x[k+3] + A[k+4][row+2]*x[k+4] + A[k+5][row+2]*x[k+5] + A[k+6][row+2]*x[k+6] + A[k+7][row+2]*x[k+7]) % Q;
-            tmp_entry[3] = (tmp_entry[3] + A[k][row+3]*x[k  ] + A[k+1][row+3]*x[k+1] + A[k+2][row+3]*x[k+2] + A[k+3][row+3]*x[k+3] + A[k+4][row+3]*x[k+4] + A[k+5][row+3]*x[k+5] + A[k+6][row+3]*x[k+6] + A[k+7][row+3]*x[k+7]) % Q;
+            tmp_entry0 = (tmp_entry0 + A[k][row  ]*x[k  ] + A[k+1][row  ]*x[k+1] + A[k+2][row  ]*x[k+2] + A[k+3][row  ]*x[k+3] + A[k+4][row  ]*x[k+4] + A[k+5][row  ]*x[k+5] + A[k+6][row  ]*x[k+6] + A[k+7][row  ]*x[k+7]) % Q;
+            tmp_entry1 = (tmp_entry1 + A[k][row+1]*x[k  ] + A[k+1][row+1]*x[k+1] + A[k+2][row+1]*x[k+2] + A[k+3][row+1]*x[k+3] + A[k+4][row+1]*x[k+4] + A[k+5][row+1]*x[k+5] + A[k+6][row+1]*x[k+6] + A[k+7][row+1]*x[k+7]) % Q;
+            tmp_entry2 = (tmp_entry2 + A[k][row+2]*x[k  ] + A[k+1][row+2]*x[k+1] + A[k+2][row+2]*x[k+2] + A[k+3][row+2]*x[k+3] + A[k+4][row+2]*x[k+4] + A[k+5][row+2]*x[k+5] + A[k+6][row+2]*x[k+6] + A[k+7][row+2]*x[k+7]) % Q;
+            tmp_entry3 = (tmp_entry3 + A[k][row+3]*x[k  ] + A[k+1][row+3]*x[k+1] + A[k+2][row+3]*x[k+2] + A[k+3][row+3]*x[k+3] + A[k+4][row+3]*x[k+4] + A[k+5][row+3]*x[k+5] + A[k+6][row+3]*x[k+6] + A[k+7][row+3]*x[k+7]) % Q;
 #else
-            tmp_entry[0] = (tmp_entry[0] + get_matrix_entry(A, k, row  )*x[k  ] + get_matrix_entry(A, k+1, row  )*x[k+1] + get_matrix_entry(A, k+2, row  )*x[k+2] + get_matrix_entry(A, k+3, row  )*x[k+3] + get_matrix_entry(A, k+4, row  )*x[k+4] + get_matrix_entry(A, k+5, row  )*x[k+5] + get_matrix_entry(A, k+6, row  )*x[k+6] + get_matrix_entry(A, k+7, row  )*x[k+7]) % Q;
-            tmp_entry[1] = (tmp_entry[1] + get_matrix_entry(A, k, row+1)*x[k  ] + get_matrix_entry(A, k+1, row+1)*x[k+1] + get_matrix_entry(A, k+2, row+1)*x[k+2] + get_matrix_entry(A, k+3, row+1)*x[k+3] + get_matrix_entry(A, k+4, row+1)*x[k+4] + get_matrix_entry(A, k+5, row+1)*x[k+5] + get_matrix_entry(A, k+6, row+1)*x[k+6] + get_matrix_entry(A, k+7, row+1)*x[k+7]) % Q;
-            tmp_entry[2] = (tmp_entry[2] + get_matrix_entry(A, k, row+2)*x[k  ] + get_matrix_entry(A, k+1, row+2)*x[k+1] + get_matrix_entry(A, k+2, row+2)*x[k+2] + get_matrix_entry(A, k+3, row+2)*x[k+3] + get_matrix_entry(A, k+4, row+2)*x[k+4] + get_matrix_entry(A, k+5, row+2)*x[k+5] + get_matrix_entry(A, k+6, row+2)*x[k+6] + get_matrix_entry(A, k+7, row+2)*x[k+7]) % Q;
-            tmp_entry[3] = (tmp_entry[3] + get_matrix_entry(A, k, row+3)*x[k  ] + get_matrix_entry(A, k+1, row+3)*x[k+1] + get_matrix_entry(A, k+2, row+3)*x[k+2] + get_matrix_entry(A, k+3, row+3)*x[k+3] + get_matrix_entry(A, k+4, row+3)*x[k+4] + get_matrix_entry(A, k+5, row+3)*x[k+5] + get_matrix_entry(A, k+6, row+3)*x[k+6] + get_matrix_entry(A, k+7, row+3)*x[k+7]) % Q;
+            tmp_entry0 = (tmp_entry0 + get_matrix_entry(A, k, row  )*x[k  ] + get_matrix_entry(A, k+1, row  )*x[k+1] + get_matrix_entry(A, k+2, row  )*x[k+2] + get_matrix_entry(A, k+3, row  )*x[k+3] + get_matrix_entry(A, k+4, row  )*x[k+4] + get_matrix_entry(A, k+5, row  )*x[k+5] + get_matrix_entry(A, k+6, row  )*x[k+6] + get_matrix_entry(A, k+7, row  )*x[k+7]) % Q;
+            tmp_entry1 = (tmp_entry1 + get_matrix_entry(A, k, row+1)*x[k  ] + get_matrix_entry(A, k+1, row+1)*x[k+1] + get_matrix_entry(A, k+2, row+1)*x[k+2] + get_matrix_entry(A, k+3, row+1)*x[k+3] + get_matrix_entry(A, k+4, row+1)*x[k+4] + get_matrix_entry(A, k+5, row+1)*x[k+5] + get_matrix_entry(A, k+6, row+1)*x[k+6] + get_matrix_entry(A, k+7, row+1)*x[k+7]) % Q;
+            tmp_entry2 = (tmp_entry2 + get_matrix_entry(A, k, row+2)*x[k  ] + get_matrix_entry(A, k+1, row+2)*x[k+1] + get_matrix_entry(A, k+2, row+2)*x[k+2] + get_matrix_entry(A, k+3, row+2)*x[k+3] + get_matrix_entry(A, k+4, row+2)*x[k+4] + get_matrix_entry(A, k+5, row+2)*x[k+5] + get_matrix_entry(A, k+6, row+2)*x[k+6] + get_matrix_entry(A, k+7, row+2)*x[k+7]) % Q;
+            tmp_entry3 = (tmp_entry3 + get_matrix_entry(A, k, row+3)*x[k  ] + get_matrix_entry(A, k+1, row+3)*x[k+1] + get_matrix_entry(A, k+2, row+3)*x[k+2] + get_matrix_entry(A, k+3, row+3)*x[k+3] + get_matrix_entry(A, k+4, row+3)*x[k+4] + get_matrix_entry(A, k+5, row+3)*x[k+5] + get_matrix_entry(A, k+6, row+3)*x[k+6] + get_matrix_entry(A, k+7, row+3)*x[k+7]) % Q;
 #endif
         }
-        y[row    ] = (e[row    ] + tmp_entry[0])% Q;
-        y[row + 1] = (e[row + 1] + tmp_entry[1])% Q;
-        y[row + 2] = (e[row + 2] + tmp_entry[2])% Q;
-        y[row + 3] = (e[row + 3] + tmp_entry[3])% Q;
+        y[row    ] = (y[row    ] + tmp_entry0)% Q;
+        y[row + 1] = (y[row + 1] + tmp_entry1)% Q;
+        y[row + 2] = (y[row + 2] + tmp_entry2)% Q;
+        y[row + 3] = (y[row + 3] + tmp_entry3)% Q;
     }
 
 }
@@ -141,8 +141,7 @@ void mul_times_secret_plus_error(FP *y, matrix *A, FP *x, FP e[M])
 void EHT_encrypt(FP MasterSecret[N], cipherText *CipherText, publicKey *PublicKey)
 {
 
-    FP e[M];
-    sample_error(e);
+    sample_error(CipherText->y);
     mul_times_secret_plus_error(CipherText->y, PublicKey->A, MasterSecret, e);
 
 }
