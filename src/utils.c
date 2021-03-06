@@ -84,7 +84,7 @@ int get_seed()
     ASSERT(ret > 0, "could not read from /dev/urandom in get_seed");
     close(randomData);
 
-    return 0;
+    return seed;
 }
 
 /* Access system counter for benchmarking */
