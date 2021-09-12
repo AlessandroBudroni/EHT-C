@@ -56,11 +56,11 @@ if(CMAKE_COMPILER_IS_GNUCC)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
                     OUTPUT_VARIABLE GCC_VERSION)
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -O3")
+    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -O3 -pthread")
     elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
-    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -std=c11 -g -O0 -m64 -D_FILE_OFFSET_BITS=64 -static-libgcc -Wformat=0 -Werror -Wno-unused-function -Wno-unused-result -Wno-strict-prototypes -Wcast-align -Wunused-value -Wunused-variable -Wundef -pedantic")
+    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -std=c11 -g -pthread -O0 -m64 -D_FILE_OFFSET_BITS=64 -static-libgcc -Wformat=0 -Werror -Wno-unused-function -Wno-unused-result -Wno-strict-prototypes -Wcast-align -Wunused-value -Wunused-variable -Wundef -pedantic")
     elseif(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -std=c11 -g --coverage -O0 -m64 -D_FILE_OFFSET_BITS=64 -static-libgcc -Wformat=0 -Werror -Wno-unused-function -Wno-unused-result -Wno-strict-prototypes -Wcast-align -Wunused-value -Wunused-variable -Wundef -pedantic")
+    	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -std=c11 -g -pthread --coverage -O0 -m64 -D_FILE_OFFSET_BITS=64 -static-libgcc -Wformat=0 -Werror -Wno-unused-function -Wno-unused-result -Wno-strict-prototypes -Wcast-align -Wunused-value -Wunused-variable -Wundef -pedantic")
     else()
     	message( FATAL_ERROR "CMAKE_BUILD_TYPE not valid")
     endif()
@@ -121,12 +121,12 @@ target_include_directories(ehtha PUBLIC ${OUTPUT_INCLUDE_DIR} "${EHT_HIGH_A}")
 target_include_directories(ehthb PUBLIC ${OUTPUT_INCLUDE_DIR} "${EHT_HIGH_B}")
 
 # target math library
-target_link_libraries(ehtla m)
-target_link_libraries(ehtlb m)
-target_link_libraries(ehtma m)
-target_link_libraries(ehtmb m)
-target_link_libraries(ehtha m)
-target_link_libraries(ehthb m)
+target_link_libraries(ehtla m pthread)
+target_link_libraries(ehtlb m pthread)
+target_link_libraries(ehtma m pthread)
+target_link_libraries(ehtmb m pthread)
+target_link_libraries(ehtha m pthread)
+target_link_libraries(ehthb m pthread)
 
 #set output library location
 set_target_properties(ehtla

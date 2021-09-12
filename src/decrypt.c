@@ -21,6 +21,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "decrypt.h"
 #include "encoding.h"
